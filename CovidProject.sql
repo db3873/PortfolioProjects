@@ -1,12 +1,12 @@
+/*
+Covid 19 Data Exploration 
+Skills used: Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
+*/
+
 SELECT *
 FROM CovidProject.dbo.CovidDeaths
 WHERE continent is not null
 ORDER BY 3,4
-
-
---SELECT *
---FROM CovidProject.dbo.CovidVaccinations
---ORDER BY 3,4
 
 -- Select Data that we are going to be using
 
@@ -25,6 +25,7 @@ and continent is not null
 ORDER BY 1,2
 
 -- Looking at Total Cases vs Population
+-- Shows what percentage of population infected with Covid
 
 SELECT location, date, total_cases, population, (total_cases/population)*100 as PercentPopulation
 FROM CovidProject.dbo.CovidDeaths
@@ -32,7 +33,7 @@ WHERE location = 'United States'
 and continent is not null
 ORDER BY 1,2
 
--- Looking at countries with highest infection rate compared to population
+-- Countries with Highest Infection Rate compared to Population
 
 SELECT location, population, MAX(total_cases) as HighestInfectionCount, MAX(total_cases/population)*100 as PercentPopulationInfected
 FROM CovidProject.dbo.CovidDeaths
@@ -40,7 +41,7 @@ WHERE continent is not null
 GROUP BY location, population
 ORDER BY PercentPopulationInfected desc
 
--- Showing the countries with the highest death count per population
+-- Countries with Highest Death Count per Population
 
 SELECT location, MAX(cast(total_deaths as int)) as TotalDeathCount
 FROM CovidProject.dbo.CovidDeaths
@@ -48,9 +49,7 @@ WHERE continent is not null
 GROUP BY location
 ORDER BY TotalDeathCount desc
 
--- Lets break things down by continent
-
-
+-- BREAKING THINGS DOWN BY CONTINENT
 
 -- Showing the continents with the highest death counts
 
@@ -68,7 +67,8 @@ WHERE continent is not null
 GROUP BY date
 ORDER BY 1,2
 
--- Looking at total population vs vaccinations
+-- Total Population vs Vaccinations
+-- Shows Percentage of Population that has recieved at least one Covid Vaccine
 
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 , SUM(CONVERT(bigint, vac.new_vaccinations)) OVER (partition by dea.location Order by dea.location, dea.date) as RollingPeopleVaccinated
@@ -80,7 +80,7 @@ WHERE dea.continent is not null
 ORDER BY 2,3
 
 
--- USE CTE
+-- Using CTE to perform Calculation on Partition By in previous query
 
 WITH PopvsVac (Continent, location, date, population, new_vaccinations, rollingpeoplevaccinated)
 AS
@@ -98,7 +98,7 @@ SELECT *, (rollingpeoplevaccinated/population)*100
 FROM PopvsVac
 
 
--- temp table
+-- Using Temp Table to perform Calculation on Partition By in previous query
 
 DROP Table if exists #PercentPopulationVaccinated
 Create Table #PercentPopulationVaccinated
